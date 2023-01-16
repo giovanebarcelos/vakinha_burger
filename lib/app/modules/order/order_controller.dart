@@ -16,7 +16,12 @@ class OrderController {
 
     final order = await _orderService.createOrder(orderVM);
 
-    return Response.ok(jsonEncode({'message': 'created with success'}));
+    return Response.ok(
+      order.toJson(),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    );
   }
 
   Router get router => _$OrderControllerRouter(this);

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:mysql1/mysql1.dart';
 import 'package:vakinha_burger_api/app/core/database/database.dart';
 import 'package:vakinha_burger_api/app/core/exceptions/email_already_registered.dart';
@@ -59,6 +61,28 @@ class UserRepository {
       print(e);
       print(s);
       throw Exception();
+    } finally {
+      await conn?.close();
+    }
+  }
+
+  Future<User> findById(int id) async {
+    MySqlConnection? conn;
+    try {
+      conn = await Database().openConnection();
+      final result =
+          await conn.query('''select * from usuario where id = ?''', [id]);
+      final mysqlData = result.first;
+
+      return User(
+          id: mysqlData['id'] as int,
+          name: mysqlData['nome'] as String,
+          email: mysqlData['email'] as String,
+          password: '');
+    } on MySqlException catch (e, s) {
+      log('Error during find user by id',
+          name: 'UserRepository.findById', error: e, stackTrace: s);
+      throw Exception('Error during find user by id');
     } finally {
       await conn?.close();
     }
