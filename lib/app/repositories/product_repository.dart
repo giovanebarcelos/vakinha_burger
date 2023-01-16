@@ -1,7 +1,6 @@
 import 'package:mysql1/mysql1.dart';
 import 'package:vakinha_burger_api/app/core/database/database.dart';
 
-import '../core/gerencianet/gerencianet_rest_client.dart';
 import '../entities/product.dart';
 
 class ProductRepository {
@@ -30,20 +29,6 @@ class ProductRepository {
       throw Exception('Database connection error');
     } finally {
       await conn?.close();
-    }
-
-    return <Product>[];
-  }
-
-  Future<Product?> findById(String id) async {
-    final response = await GerencianetRestClient()
-        .get('/v2/products/$id')
-        .catchError((e) => print(e));
-
-    if (response.statusCode == 200) {
-      return Product.fromJson(response.data);
-    } else {
-      return null;
     }
   }
 }
