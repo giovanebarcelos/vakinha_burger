@@ -15,7 +15,7 @@ class GerencianetPix {
       final billingData = {
         'calendario': {'expiracao': 3600},
         'devedor': {'cpf': cpf, 'nome': name},
-        'valor': {'original': value.toString()},
+        'valor': {'original': value.toStringAsFixed(2)},
         'chave': env['gerencianetPixKey'],
         'solicitacaoPagador':
             'Cobrança dos itens referente ao pedido $orderId do Vakinha Burger',
