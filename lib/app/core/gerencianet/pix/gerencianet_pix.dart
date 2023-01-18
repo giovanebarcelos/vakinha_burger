@@ -58,10 +58,10 @@ class GerencianetPix {
     }
   }
 
-  void registerWebhook() {
+  Future<void> registerWebhook() async {
     final gerencianetRestClient = GerencianetRestClient();
 
-    gerencianetRestClient.auth().put(
+    await gerencianetRestClient.auth().put(
       '/v2/webhook/${env['gerencianetPixKey']}',
       data: {
         "webhookUrl": env['gerencianetWebhookUrl'],

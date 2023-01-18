@@ -38,6 +38,14 @@ services:
       #- ./data/letsencrypt:/letsencrypt
       - letsencrypt-conf:/letsencrypt
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      dns:
+      - ${IPV4_NETWORK:-172.22.1}.254
+      - 8.8.8.8
+      networks:
+         goNetVB:
+            aliases:
+            - traefik
+
 
    mariadb:
       image: mariadb
@@ -69,7 +77,7 @@ services:
       networks:
          goNetVB:
             aliases:
-            - mariadb-vakinha-burger
+            - mariadb
 
    adminer:
       image: adminer
@@ -91,7 +99,7 @@ services:
       networks: 
          goNetVB:
             aliases: 
-            - adminer-vakinha-burger
+            - adminer
 
    portainer: 
       image: portainer/portainer-ce
@@ -116,7 +124,7 @@ services:
       networks: 
          goNetVB:
             aliases: 
-            - portainer-vakinha-burger
+            - portainer
 
    dart:       
       build: .
@@ -139,7 +147,7 @@ services:
       networks: 
          goNetVB:
             aliases: 
-            - portainer-vakinha-burger
+            - portainer
 
 networks:
    goNetVB:

@@ -12,16 +12,18 @@ part 'gerencianet_webhooks_controller.g.dart';
 class GerencianetWebhooksController {
   final _orderService = OrderService();
 
-  @Route.post('/register')
+  @Route.post('/webhook/register')
   Future<Response> register(Request request) async {
-    GerencianetPix().registerWebhook();
+    await GerencianetPix().registerWebhook();
+
+    log('Passei aqui1');
 
     return Response.ok(jsonEncode({}), headers: {
       'content-type': 'application/json',
     });
   }
 
-  @Route.post('/')
+  @Route.post('/webhook')
   Future<Response> webhookConfig(Request request) async {
     return Response(200, headers: {'content-type': 'application/json'});
   }
