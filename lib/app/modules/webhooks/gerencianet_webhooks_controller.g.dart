@@ -21,7 +21,7 @@ Router _$GerencianetWebhooksControllerRouter(
   );
   router.add(
     'POST',
-    r'/pix',
+    r'/webhook/pix',
     service.webhookPaymentCallback,
   );
   return router;

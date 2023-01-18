@@ -28,7 +28,7 @@ class GerencianetWebhooksController {
     return Response(200, headers: {'content-type': 'application/json'});
   }
 
-  @Route.post('/pix')
+  @Route.post('/webhook/pix')
   Future<Response> webhookPaymentCallback(Request request) async {
     try {
       final callback = await GerencianetCallbackViewModel.fromJson(
