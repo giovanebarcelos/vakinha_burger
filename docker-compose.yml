@@ -107,8 +107,8 @@ services:
       - "/etc/localtime:/etc/localtime:ro"
       labels:
       - traefik.enable=true
-      - traefik.http.routers.adminer.rule=${domainPORTAINER}
-      - traefik.http.routers.adminer.tls.certresolver=letsencrypt
+      - traefik.http.routers.portainer.rule=${domainPORTAINER}
+      - traefik.http.routers.portainer.tls.certresolver=letsencrypt
       - traefik.port=9000
       dns: 
       - ${IPV4_NETWORK:-172.22.1}.254
@@ -130,8 +130,8 @@ services:
       - "/etc/localtime:/etc/localtime:ro"
       labels:
       - traefik.enable=true
-      - traefik.http.routers.adminer.rule=${domainVAKINHA}
-      - traefik.http.routers.adminer.tls.certresolver=letsencrypt
+      - traefik.http.routers.dart.rule=${domainVAKINHA}
+      - traefik.http.routers.dart.tls.certresolver=letsencrypt
       - traefik.port=8080
       dns: 
       - ${IPV4_NETWORK:-172.22.1}.254
