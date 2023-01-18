@@ -1,0 +1,109 @@
+version: "3.9"
+services:
+   mariadb:
+      image: mariadb
+      container_name: mariadb-vakinha-burger
+      hostname: mariadb
+      restart: ${RESTART_MODE}
+      environment:
+      - TZ=${TZ}
+      - MYSQL_USER=${databaseUser}
+      - MYSQL_ROOT_PASSWORD=${databasePassword}
+      - MYSQL_DATABASE=${databaseName}
+      - MYSQL_PASSWORD=${databasePassword}
+      healthcheck:
+         test: ["CMD-SHELL", 'mysql --database=$$MYSQL_DATABASE --password=$$MYSQL_ROOT_PASSWORD --execute="SELECT count(table_name) > 0 FROM information_schema.tables;" --skip-column-names -B']
+         interval: 30s
+         timeout: 10s
+         retries: 4
+      volumes:
+      - mariadb-conf:/etc/mysql/conf.d
+      - mariadb-lib:/var/lib/mysql/
+      - mariadb-socket:/var/run/mysqld/
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+      ports:
+      - "3306:3306"
+      dns: 
+      - ${IPV4_NETWORK:-172.22.1}.254
+      - 8.8.8.8
+      networks:
+         goNetVB:
+            aliases:
+            - mariadb-vakinha-burger
+
+   adminer:
+      image: adminer
+      container_name: adminer-vakinha-burger
+      hostname: adminer
+      restart: ${RESTART_MODE}
+      environment:
+      - TZ=${TZ}
+      depends_on:
+      - mariadb      
+      ports: 
+      - "8081:8080"
+      dns: 
+      - ${IPV4_NETWORK:-172.22.1}.254
+      - 8.8.8.8
+      networks: 
+         goNetVB:
+            aliases: 
+            - adminer-vakinha-burger
+
+   portainer: 
+      image: portainer/portainer-ce
+      container_name: portainer-vakinha-burger
+      hostname: portainer
+      environment: 
+      - TZ=${TZ}
+      restart: ${RESTART_MODE}
+      command: -H unix:///var/run/docker.sock 
+      volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+      ports: 
+      - "9000:9000"
+      dns: 
+      - ${IPV4_NETWORK:-172.22.1}.254
+      - 8.8.8.8
+      networks: 
+         goNetVB:
+            aliases: 
+            - portainer-vakinha-burger
+
+   dart:       
+      build: .
+      container_name: dart-server-vakinha-burger
+      hostname: dart-server
+      environment: 
+      - TZ=${TZ}
+      restart: ${RESTART_MODE}
+      volumes:
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+      ports: 
+      - "8080:8080"
+      dns: 
+      - ${IPV4_NETWORK:-172.22.1}.254
+      - 8.8.8.8
+      networks: 
+         goNetVB:
+            aliases: 
+            - portainer-vakinha-burger
+
+networks:
+   goNetVB:
+      driver: bridge
+      name: goNetVB
+      ipam: 
+         driver: default 
+         config: 
+         - subnet: ${IPV4_NETWORK:-172.22.1}.0/24
+
+volumes:
+   mariadb-conf:
+   mariadb-lib:
+   mariadb-socket:
+   portainer-data:

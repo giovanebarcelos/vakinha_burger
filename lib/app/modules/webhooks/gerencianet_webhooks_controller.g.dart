@@ -11,6 +11,11 @@ Router _$GerencianetWebhooksControllerRouter(
   final router = Router();
   router.add(
     'POST',
+    r'/register',
+    service.register,
+  );
+  router.add(
+    'POST',
     r'/',
     service.webhookConfig,
   );

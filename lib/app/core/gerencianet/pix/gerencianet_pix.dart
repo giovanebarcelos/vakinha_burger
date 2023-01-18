@@ -57,4 +57,15 @@ class GerencianetPix {
       rethrow;
     }
   }
+
+  void registerWebhook() {
+    final gerencianetRestClient = GerencianetRestClient();
+
+    gerencianetRestClient.auth().put(
+      '/v2/webhook/${env['gerencianetPixKey']}',
+      data: {
+        "webhookUrl": env['gerencianetWebhookUrl'],
+      },
+    ).then((value) => print(value.data));
+  }
 }

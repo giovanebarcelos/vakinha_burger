@@ -1,0 +1,158 @@
+version: "3.9"
+services:
+   traefik:
+      image: traefik
+      command:
+      # Try to enable this if something isn't working. 
+      # Chances are, Traefik will tell you why.
+      # Be careful in production as it exposes the traffic you might not want to expose.
+      #--log.level=DEBUG
+      - --entrypoints.http.address=:80
+      - --entrypoints.https.address=:443
+      - --providers.docker=true
+      - --api=true
+
+      # LetsEncrypt Staging Server - uncomment when testing
+      # - --certificatesResolvers.letsencrypt.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge=true
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=http
+      - --certificatesresolvers.letsencrypt.acme.email=${traefikEMAIL}
+      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
+      labels:
+      # Redirect all HTTP traffic to HTTPS
+      - traefik.http.routers.to-https.rule=HostRegexp(`{host:.+}`)
+      - traefik.http.routers.to-https.entrypoints=http
+      - traefik.http.routers.to-https.middlewares=to-https
+      - traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN}`)
+      - traefik.http.routers.traefik.entrypoints=https
+      - traefik.http.routers.traefik.middlewares=auth
+      - traefik.http.routers.traefik.service=api@internal
+      - traefik.http.routers.traefik.tls=true
+      - traefik.http.routers.traefik.tls.certresolver=${CERT_RESOLVER}
+      - traefik.http.middlewares.to-https.redirectscheme.scheme=https
+      - traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_USER}:${TRAEFIK_PASSWORD_HASH}
+      ports:
+      - 80:80
+      - 443:443
+      volumes:
+      #- ./data/letsencrypt:/letsencrypt
+      - letsencrypt-conf:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+   mariadb:
+      image: mariadb
+      container_name: mariadb-vakinha-burger
+      hostname: mariadb
+      restart: ${RESTART_MODE}
+      environment:
+      - TZ=${TZ}
+      - MYSQL_USER=${databaseUser}
+      - MYSQL_ROOT_PASSWORD=${databasePassword}
+      - MYSQL_DATABASE=${databaseName}
+      - MYSQL_PASSWORD=${databasePassword}
+      healthcheck:
+         test: ["CMD-SHELL", 'mysql --database=$$MYSQL_DATABASE --password=$$MYSQL_ROOT_PASSWORD --execute="SELECT count(table_name) > 0 FROM information_schema.tables;" --skip-column-names -B']
+         interval: 30s
+         timeout: 10s
+         retries: 4
+      volumes:
+      - mariadb-conf:/etc/mysql/conf.d
+      - mariadb-lib:/var/lib/mysql/
+      - mariadb-socket:/var/run/mysqld/
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+      #ports:
+      #- "3306:3306"
+      dns: 
+      - ${IPV4_NETWORK:-172.22.1}.254
+      - 8.8.8.8
+      networks:
+         goNetVB:
+            aliases:
+            - mariadb-vakinha-burger
+
+   adminer:
+      image: adminer
+      container_name: adminer-vakinha-burger
+      hostname: adminer
+      restart: ${RESTART_MODE}
+      environment:
+      - TZ=${TZ}
+      depends_on:
+      - mariadb
+      labels:
+      - traefik.enable=true
+      - traefik.http.routers.adminer.rule=${domainADMINER}
+      - traefik.http.routers.adminer.tls.certresolver=letsencrypt
+      - traefik.port=8080
+      dns: 
+      - ${IPV4_NETWORK:-172.22.1}.254
+      - 8.8.8.8
+      networks: 
+         goNetVB:
+            aliases: 
+            - adminer-vakinha-burger
+
+   portainer: 
+      image: portainer/portainer-ce
+      container_name: portainer-vakinha-burger
+      hostname: portainer
+      environment: 
+      - TZ=${TZ}
+      restart: ${RESTART_MODE}
+      command: -H unix:///var/run/docker.sock 
+      volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+      labels:
+      - traefik.enable=true
+      - traefik.http.routers.adminer.rule=${domainPORTAINER}
+      - traefik.http.routers.adminer.tls.certresolver=letsencrypt
+      - traefik.port=9000
+      dns: 
+      - ${IPV4_NETWORK:-172.22.1}.254
+      - 8.8.8.8
+      networks: 
+         goNetVB:
+            aliases: 
+            - portainer-vakinha-burger
+
+   dart:       
+      build: .
+      container_name: dart-server-vakinha-burger
+      hostname: dart-server
+      environment: 
+      - TZ=${TZ}
+      restart: ${RESTART_MODE}
+      volumes:
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+      labels:
+      - traefik.enable=true
+      - traefik.http.routers.adminer.rule=${domainVAKINHA}
+      - traefik.http.routers.adminer.tls.certresolver=letsencrypt
+      - traefik.port=8080
+      dns: 
+      - ${IPV4_NETWORK:-172.22.1}.254
+      - 8.8.8.8
+      networks: 
+         goNetVB:
+            aliases: 
+            - portainer-vakinha-burger
+
+networks:
+   goNetVB:
+      driver: bridge
+      name: goNetVB
+      ipam: 
+         driver: default 
+         config: 
+         - subnet: ${IPV4_NETWORK:-172.22.1}.0/24
+
+volumes:
+   letsencrypt-conf:
+   mariadb-conf:
+   mariadb-lib:
+   mariadb-socket:
+   portainer-data:

@@ -7,7 +7,7 @@ COPY pubspec.* ./
 RUN dart pub get
 
 # Copy app source code (except anything in .dockerignore) and AOT compile app.
-COPY . .
+COPY . ./
 RUN dart compile exe bin/server.dart -o bin/server
 
 # Build minimal serving image from AOT-compiled `/server`
@@ -15,6 +15,10 @@ RUN dart compile exe bin/server.dart -o bin/server
 FROM scratch
 COPY --from=build /runtime/ /
 COPY --from=build /app/bin/server /app/bin/
+
+# Special and specific to this app.
+COPY images/ images/
+COPY .env .
 
 # Start server.
 EXPOSE 8080
