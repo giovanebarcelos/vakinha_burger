@@ -45,8 +45,7 @@ services:
          goNetVB:
             aliases:
             - traefik
-
-
+            
    mariadb:
       image: mariadb
       container_name: mariadb-vakinha-burger
