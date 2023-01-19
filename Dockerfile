@@ -19,7 +19,7 @@ COPY --from=build /app/bin/server /app/bin/
 # Special and specific to this app.
 COPY images/ images/
 COPY .env .
-COPY certificates/ .
+COPY certificates/ certificates/
 
 # Start server.
 EXPOSE 8080

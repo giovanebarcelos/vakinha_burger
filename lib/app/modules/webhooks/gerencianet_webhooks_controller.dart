@@ -16,8 +16,6 @@ class GerencianetWebhooksController {
   Future<Response> register(Request request) async {
     await GerencianetPix().registerWebhook();
 
-    log('Passei aqui1');
-
     return Response.ok(jsonEncode({}), headers: {
       'content-type': 'application/json',
     });
@@ -31,7 +29,7 @@ class GerencianetWebhooksController {
   @Route.post('/webhook/pix')
   Future<Response> webhookPaymentCallback(Request request) async {
     try {
-      final callback = await GerencianetCallbackViewModel.fromJson(
+      final callback = GerencianetCallbackViewModel.fromJson(
         await request.readAsString(),
       );
 

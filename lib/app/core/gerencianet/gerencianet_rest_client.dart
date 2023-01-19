@@ -26,7 +26,6 @@ class GerencianetRestClient extends DioForNative {
   void _configureCertificates() {
     httpClientAdapter = Http2Adapter(
       ConnectionManager(
-        idleTimeout: 10000,
         onClientCreate: (uri, config) {
           final pathCRT = env['GERENCIANET_CERTIFICATE_CRT'] ??
               env['gerencianetCertificateCRT'] ??
@@ -36,6 +35,7 @@ class GerencianetRestClient extends DioForNative {
               '';
 
           final root = Directory.current.path;
+
           final securityContext = SecurityContext(withTrustedRoots: true)
             ..useCertificateChain('$root/$pathCRT')
             ..usePrivateKey('$root/$pathKEY');
